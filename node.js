@@ -40,8 +40,8 @@ app.post("/ussd", (req, res) => {
         } else if (parts.length === 6) {
             // User entered appointment time
             // Store the appointment details
-            const enteredPhoneNumber = parts[3]; // Get the phone number entered by the user
-            appointments[enteredPhoneNumber] = { // Store the appointment under the entered phone number
+            const enteredPhoneNumber = parts[3]; 
+            appointments[enteredPhoneNumber] = { 
                 location: parts[1],
                 name: parts[2],
                 phoneNumber: enteredPhoneNumber,
@@ -50,22 +50,22 @@ app.post("/ussd", (req, res) => {
             };
             response = `END Your appointment has been booked!`;
         }
-    } else if (parts[0] === '2') {
+    }  else if (parts[0] === '2') {
         // User is viewing their appointment
         if (parts.length === 1) {
-                response = `CON Enter your phone number:`;
+            response = `CON Enter your phone number:`;
         } else if (parts.length === 2) {
-                const enteredPhoneNumber = parts[1];
-                console.log('Entered phone number:', enteredPhoneNumber); 
-                console.log('Stored appointments:', appointments); 
-                if (appointments[enteredPhoneNumber]) {
-                        // User has an appointment
-                        const appointment = appointments[enteredPhoneNumber];
-                        response = `END Your appointment details:\nLocation: ${appointment.location}\nName: ${appointment.name}\nPhoneNumber: ${appointment.phoneNumber}\nDate: ${appointment.date}\nTime: ${appointment.time}`;
-                } else {
-                        // User does not have an appointment
-                        response = `END You do not have any appointments.`;
-                }
+            const enteredPhoneNumber = parts[1];
+            console.log('Entered phone number:', enteredPhoneNumber); 
+            console.log('Stored appointments:', appointments); 
+            if (appointments[enteredPhoneNumber]) {
+                // User has an appointment
+                const appointment = appointments[enteredPhoneNumber];
+                response = `END Your appointment details:\nDate: ${appointment.date}\nTime: ${appointment.time}`;
+            } else {
+                // User does not have an appointment
+                response = `END You do not have any appointments.`;
+            }
         }
     }
 

@@ -4,7 +4,7 @@ const africastalking = require("africastalking");
 
 // Initialize Africa's Talking SDK
 const options = {
-    apiKey: "bfaac7b9b7f99e500fcfad8a04a2312d1a56383279ee6923d8a81bbe343d874f",
+    apiKey: "679c622da94673819d71fcd8159e05ba4b456978961d359600b28cdd0fe68c82",
     username: "appointment",
 };
 const AfricasTalking = africastalking(options);
@@ -22,7 +22,7 @@ app.post("/ussd", async (req, res) => {
 
     if (text === "") {
         // This is the first request
-        response = `CON Welcome to PetCare. Choose an option:
+        response = `CON Welcome to PetCare Clinic. Choose an option:
                 1. Book an appointment
                 2. See your appointment`;
     } else if (parts[0] === "1") {

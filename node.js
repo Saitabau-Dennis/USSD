@@ -8,14 +8,14 @@ const options = {
     username: "appointment",
 };
 const AfricasTalking = africastalking(options);
-
+const sms = AfricasTalking.SMS;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Store appointments in memory for simplicity
 const appointments = {};
 
-app.post("/ussd", (req, res) => {
+app.post("/ussd", async (req, res) => {
     let { sessionId, serviceCode, phoneNumber, text } = req.body;
     let response = "";
     let parts = text.split("*");
@@ -40,14 +40,21 @@ app.post("/ussd", (req, res) => {
         } else if (parts.length === 6) {
             // User entered appointment time
             // Store the appointment details
-            const enteredPhoneNumber = parts[3]; 
+            const enteredPhoneNumber = parts[3]; // Get the phone number entered by the user
             appointments[enteredPhoneNumber] = { 
                 location: parts[1],
                 name: parts[2],
-                phoneNumber: enteredPhoneNumber,
+                phoneNumber: phoneNumber,
                 date: parts[4],
                 time: parts[5],
             };
+
+            // Send an SMS to the user
+            const message = `You have successfully booked an appointment on ${parts[4]} at ${parts[5]}.`;
+            sms.send({to: phoneNumber, message: message})
+                .then(response => console.log(response))
+                .catch(error => console.log(error));
+
             response = `END Your appointment has been booked!`;
         }
     }  else if (parts[0] === '2') {

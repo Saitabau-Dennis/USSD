@@ -22,7 +22,7 @@ app.post("/ussd", (req, res) => {
 
     if (text === "") {
         // This is the first request
-        response = `CON Welcome to Vet Booking. Choose an option:
+        response = `CON Welcome to PetCare. Choose an option:
                 1. Book an appointment
                 2. See your appointment`;
     } else if (parts[0] === "1") {

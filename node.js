@@ -16,33 +16,31 @@ app.post('/ussd', (req, res) => {
     let { sessionId, serviceCode, phoneNumber, text } = req.body;
     let response = '';
 
+    let parts = text.split('*');
+
     if (text === '') {
         // This is the first request
         response = `CON Welcome to Vet Booking. Choose an option:
         1. Book an appointment
         2. See your appointment`;
-    } else if (text === '1') {
+    } else if (parts.length === 1) {
         // User selected 1. Book an appointment
         response = `CON Enter your location:`;
-    } else if (text.startsWith('1*')) {
+    } else if (parts.length === 2) {
         // User entered location
         response = `CON Enter your name:`;
-    } else if (text.startsWith('1*1*')) {
+    } else if (parts.length === 3) {
         // User entered name
         response = `CON Enter your email:`;
-    } else if (text.startsWith('1*1*1*')) {
+    } else if (parts.length === 4) {
         // User entered email
         response = `CON Enter your preferred appointment date (DD-MM-YYYY):`;
-    } else if (text.startsWith('1*1*1*1*')) {
+    } else if (parts.length === 5) {
         // User entered appointment date
         response = `CON Enter your preferred appointment time (HH:MM):`;
-    } else if (text.startsWith('1*1*1*1*1*')) {
+    } else if (parts.length === 6) {
         // User entered appointment time
         response = `END Your appointment has been booked!`;
-    } else if (text === '2') {
-        // User selected 2. See your appointment
-        // Fetch the appointment from the database and send it to the user
-        response = `END Your appointment is on [appointment date] at [appointment time].`;
     }
 
     res.set('Content-Type: text/plain');

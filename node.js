@@ -39,26 +39,27 @@ app.post("/ussd", async (req, res) => {
     } else if (parts.length === 5) {
       response = `CON Enter your preferred appointment time (HH:MM):`;
     } else if (parts.length === 6) {
-    // User entered appointment time
-    // Store the appointment details
-    const enteredPhoneNumber = parts[3]; // Get the phone number entered by the user
-    appointments[enteredPhoneNumber] = {
+      // User entered appointment time
+      // Store the appointment details
+      // Get the phone number entered by the user
+      const enteredPhoneNumber = parts[3];
+      appointments[enteredPhoneNumber] = {
         location: parts[1],
         name: parts[2],
         phoneNumber: enteredPhoneNumber,
         date: parts[4],
         time: parts[5],
-    };
+      };
 
-    // Send an SMS to the user
-    const message = `Hello ${parts[2]}, you have successfully booked an appointment on ${parts[4]} at ${parts[5]}.`;
-    sms
+      // Send an SMS to the user
+      const message = `Hello ${parts[2]}, you have successfully booked an appointment on ${parts[4]} at ${parts[5]}.`;
+      sms
         .send({ to: enteredPhoneNumber, message: message })
         .then((response) => console.log(response))
         .catch((error) => console.log(error));
 
-    response = `END Your appointment has been booked!`;
-}
+      response = `END Your appointment has been booked!`;
+    }
   } else if (parts[0] === "2") {
     // User is viewing their appointment
     if (parts.length === 1) {

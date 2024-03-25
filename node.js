@@ -1,6 +1,23 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const africastalking = require("africastalking");
+const mongoose = require("mongoose");
+
+//connect to mongodb atlas
+mongoose.connect(
+  "mongodb+srv://Saitabau:%23Saitabau28@atlascluster.vczjtel.mongodb.net/"
+);
+// Define a schema for the appointments
+const appointmentSchema = new mongoose.Schema({
+  location: String,
+  name: String,
+  phoneNumber: String,
+  date: String,
+  time: String,
+});
+
+// Create a model for the appointments
+const Appointment = mongoose.model("Appointment", appointmentSchema);
 
 // Initialize Africa's Talking SDK
 const options = {
@@ -43,13 +60,20 @@ app.post("/ussd", async (req, res) => {
       // Store the appointment details
       // Get the phone number entered by the user
       const enteredPhoneNumber = parts[3];
-      appointments[enteredPhoneNumber] = {
+      let appointment = new Appointment({
         location: parts[1],
         name: parts[2],
         phoneNumber: enteredPhoneNumber,
         date: parts[4],
         time: parts[5],
-      };
+      });
+      // Store the appointment in the database
+      try {
+        await appointment.save();
+        console.log("Appointment stored in MongoDB Atlas");
+      } catch (err) {
+        console.error(err);
+      }
 
       // Send an SMS to the user
       const message = `Hello ${parts[2]}, you have successfully booked an appointment on ${parts[4]} at ${parts[5]}.`;
@@ -65,20 +89,26 @@ app.post("/ussd", async (req, res) => {
     if (parts.length === 1) {
       response = `CON Enter your phone number:`;
     } else if (parts.length === 2) {
+      // User entered their phone number
       const enteredPhoneNumber = parts[1];
-      console.log("Entered phone number:", enteredPhoneNumber);
-      console.log("Stored appointments:", appointments);
-      if (appointments[enteredPhoneNumber]) {
-        // User has an appointment
-        const appointment = appointments[enteredPhoneNumber];
-        response = `END Your appointment details:\nDate: ${appointment.date}\nTime: ${appointment.time}`;
-      } else {
-        // User does not have an appointment
-        response = `END You do not have any appointments.`;
+      try {
+        const appointments = await Appointment.find({
+          phoneNumber: enteredPhoneNumber,
+        });
+        if (appointments.length === 0) {
+          response = `END You have no appointments.`;
+        } else {
+          let appointmentStrings = appointments.map((appointment) => {
+            return `Date: ${appointment.date}, Time: ${appointment.time}`;
+          });
+          response = `END Your appointments:\n${appointmentStrings.join("\n")}`;
+        }
+      } catch (err) {
+        console.error(err);
+        response = `END An error occurred while fetching your appointments.`;
       }
     }
   }
-
   res.set("Content-Type: text/plain");
   res.send(response);
 });

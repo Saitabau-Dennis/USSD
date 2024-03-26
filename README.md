@@ -1,4 +1,4 @@
-# PetCare USSD
+# HealPath USSD
 - This project is project dealing with providing USSD services to the user
 - It enables users to books appointments and also view the appointments they have booked
 
@@ -16,4 +16,4 @@
 ## Technologies used
 - node.js
 - mogoDB for data storage
-- africastalking api to provide abilities to notification messages to the user
+- africastalking api to provide abilities to notification messages to the user and managing the ussd

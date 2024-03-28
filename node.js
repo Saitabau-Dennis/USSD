@@ -4,133 +4,149 @@ const africastalking = require("africastalking");
 const mongoose = require("mongoose");
 
 //connect to mongodb atlas
-mongoose.connect(
-  "mongodb+srv://Saitabau:%23Saitabau28@atlascluster.vczjtel.mongodb.net/"
-);
+mongoose
+  .connect(
+    "mongodb+srv://Saitabau:%23Saitabau28@atlascluster.vczjtel.mongodb.net/"
+  )
+  .catch((error) => console.error(error));
+
 // Define a schema for the appointments
-const appointmentSchema = new mongoose.Schema({
+const saccoSchema = new mongoose.Schema({
   name: String,
-  age: String,
+  idNumber: String,
   phoneNumber: String,
-  date: String,
-  time: String,
+  pin: String,
 });
 
 // Create a model for the appointments
-const Appointment = mongoose.model("Appointment", appointmentSchema);
+const Sacco = mongoose.model("Sacco", saccoSchema);
+
+const LoanSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Sacco',
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+});
+
+const Loan = mongoose.model('Loan', LoanSchema);
 
 // Initialize Africa's Talking SDK
 const options = {
   apiKey: "deae18f681434f31c0232bd2957f305a3dcc045cf570ba71dc7acc525a193053",
   username: "appointment",
 };
+
 const AfricasTalking = africastalking(options);
 const sms = AfricasTalking.SMS;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Store appointments in memory for simplicity
-const appointments = {};
+let sacco = {};
 
 app.post("/ussd", async (req, res) => {
+  let response = "";
   let { sessionId, serviceCode, phoneNumber, text } = req.body;
   console.log(`Received a request for session: ${sessionId}`); // Log the session ID
-  let response = "";
+   
   let parts = text.split("*");
 
-  if (text === "") {
-    // This is the first request
-    response = `CON Welcome to HealPath. Choose an option:
-                1. Book an appointment
-                2. See your appointment`;
+  if (parts[0] === "") {
+    // New session, show initial options
+    return res.send(
+      "CON Hi there, welcome to Optimum Sacco\n1. View your account\n2. Register"
+    );
   } else if (parts[0] === "1") {
-    // User is booking an appointment
-    if (parts.length === 1) {
-      response = `CON Enter your full names:`;
-    } else if (parts.length === 2) {
-      response = `CON Enter your age:`;
-    } else if (parts.length === 3) {
-      response = `CON Enter your phone number:`;
-    } else if (parts.length === 4) {
-      response = `CON Choose your preferred appointment date:
-                  1. 01-05-2024
-                  2. 02-05-2024
-                  3. 03-05-2024`;
-    } else if (parts.length === 5) {
-      response = `CON Choose your preferred appointment time:
-                  1. 09:00
-                  2. 10:00
-                  3. 11:00`;
-    } else if (parts.length === 6) {
-      // User entered appointment time
-      // Store the appointment details
-      // Get the name, age, and phone number entered by the user
-      const dates = ["01-05-2024", "02-05-2024", "03-05-2024"];
-      const times = ["09:00", "10:00", "11:00"];
-      const enteredName = parts[1];
-      const enteredAge = parts[2];
-      const enteredPhoneNumber = parts[3];
-      const chosenDate = dates[parseInt(parts[4]) - 1];
-      const chosenTime = times[parseInt(parts[5]) - 1];
-
-      let appointment = new Appointment({
-        name: enteredName,
-        age: enteredAge,
-        phoneNumber: enteredPhoneNumber,
-        date: chosenDate,
-        time: chosenTime,
-      });
-      console.log(appointment);
-
-      // Store the appointment in the database
-      try {
-        await appointment.save();
-        console.log("Appointment stored in MongoDB Atlas");
-      } catch (err) {
-        console.error(err);
+    // View Account
+    if (!parts[1]) {
+      // Ask for PIN
+      return res.send("CON Enter your PIN:");
+    } else if (!parts[2]) {
+      // Validate PIN and show options
+      const user = await Sacco.findOne({ pin: parts[1] });
+      if (user) {
+        // User found, show account details
+        return res.send(
+          `CON Name: ${user.name}\nID Number: ${user.idNumber}\nPhone Number: ${user.phoneNumber}\n\n1. Check Saving Statement\n2. Predict What to Save\n3. Get Loan`
+        );
+      } else {
+        return res.send("END Invalid PIN");
       }
-      // Send an SMS to the user
-      const message = {
-        to: phoneNumber,
-        message: `Hello ${appointment.name}, thank you for booking your appointment. Your appointment is scheduled for ${chosenDate} at ${chosenTime}.`,
-      };
-      sms
-        .send(message)
-        .then((response) => console.log(response))
-        .catch((error) => console.log(error));
-
-      response = `END Your appointment has been booked!`;
+    } else if (parts[2] === "3") {
+      // Get Loan
+      if (!parts[3]) {
+        // Ask for loan amount
+        return res.send("CON Enter loan amount:");
+      } else {
+        // Save loan to database and show confirmation
+        const user = await Sacco.findOne({ pin: parts[1] }); // Retrieve user again
+        if (user) {
+          const newLoan = new Loan({
+            userId: user._id,
+            amount: parts[3],
+          });
+          await newLoan.save();
+          return res.send("END Your loan request has been received.");
+        } else {
+          return res.send("END User not found."); // Handle case where user is not found
+        }
+      }
     }
   } else if (parts[0] === "2") {
-    // User is viewing their appointment
-    if (parts.length === 1) {
-      response = `CON Enter your full names:`;
-    } else if (parts.length === 2) {
-      // User entered their phone number
-      const enteredName = parts[1];
-      try {
-        const appointments = await Appointment.find({
-          name: enteredName,
-        });
-
-        console.log(appointments);
-
-        if (appointments.length === 0) {
-          response = `END You have no appointments.`;
-        } else {
-          let appointmentStrings = appointments.map((appointment) => {
-            return `Name: ${appointment.name}, Date: ${appointment.date}, Time: ${appointment.time}`;
-          });
-          response = `END Your appointments:\n${appointmentStrings.join("\n")}`;
-        }
-      } catch (err) {
-        console.error(err);
-        response = `END An error occurred while fetching your appointments.`;
+    // Register
+    if (!parts[1]) {
+      // Ask for name
+      return res.send("CON Enter your name:");
+    } else if (!parts[2]) {
+      // Ask for ID number
+      return res.send("CON Enter your ID number:");
+    } else if (!parts[3]) {
+      // Ask for phone number
+      return res.send("CON Enter your phone number:");
+    } else if (!parts[4]) {
+      // Ask for PIN
+      return res.send("CON Set your PIN:");
+    } else {
+      // Save user to database and show options
+      const newUser = new Sacco({
+        name: parts[1],
+        idNumber: parts[2],
+        phoneNumber: phoneNumber,
+        pin: parts[4],
+      });
+      await newUser.save();
+      // Send SMS
+      if (
+        newUser.phoneNumber &&
+        /^(\+\d{1,3})?\d{10}$/.test(phoneNumber)
+      ) {
+        const smsOptions = {
+          to: [
+            newUser.phoneNumber.startsWith("+")
+              ? phoneNumber
+              : "+254" + phoneNumber.slice(-9),
+          ],
+          message: `Hello ${newUser.name}, welcome to Optimum Sacco. You have successfully registered!`,
+        };
+        sms
+          .send(smsOptions)
+          .then((response) => console.log(response))
+          .catch((error) => console.error(error));
+      } else {
+        console.error("Invalid phone number");
       }
+      return res.send(
+        "CON You have successfully registered"
+      );
     }
   }
   res.set("Content-Type:text/plain");
-  res.send(response);
+  return res.send(response);
 });
 
 app.listen(3000, () => {

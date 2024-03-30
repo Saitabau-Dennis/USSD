@@ -10,7 +10,7 @@ mongoose
   )
   .catch((error) => console.error(error));
 
-// Define a schema for the appointments
+// Define a schema for the sacco
 const saccoSchema = new mongoose.Schema({
   name: String,
   idNumber: String,
@@ -18,7 +18,7 @@ const saccoSchema = new mongoose.Schema({
   pin: String,
 });
 
-// Create a model for the appointments
+// Create a model for the sacco
 const Sacco = mongoose.model("Sacco", saccoSchema);
 
 const LoanSchema = new mongoose.Schema({
@@ -46,20 +46,21 @@ const sms = AfricasTalking.SMS;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Store appointments in memory for simplicity
-let sacco = {};
+// Store sacco in memory for simplicity
+//let sacco = {};
 
 app.post("/ussd", async (req, res) => {
   let response = "";
   let { sessionId, serviceCode, phoneNumber, text } = req.body;
-  console.log(`Received a request for session: ${sessionId}`); // Log the session ID
-   
+
+  // Log the session ID
+  console.log(`Received a request for session: ${sessionId}`); 
   let parts = text.split("*");
 
   if (parts[0] === "") {
     // New session, show initial options
     return res.send(
-      "CON Hi there, welcome to Optimum Sacco\n1. View your account\n2. Register"
+      "CON Hello, Welcome to Optimum Sacco\n1. View your account\n2. Register"
     );
   } else if (parts[0] === "1") {
     // View Account
@@ -77,9 +78,9 @@ app.post("/ussd", async (req, res) => {
       } else {
         return res.send("END Invalid PIN");
       }
-    } else if (parts[2] === "3") {
+    } else if (parts[2] === "4") {
       // Get Loan
-      if (!parts[3]) {
+      if (!parts[4]) {
         // Ask for loan amount
         return res.send("CON Enter loan amount:");
       } else {
@@ -88,10 +89,11 @@ app.post("/ussd", async (req, res) => {
         if (user) {
           const newLoan = new Loan({
             userId: user._id,
+            name: parts[1],
             amount: parts[3],
           });
           await newLoan.save();
-          return res.send("END Your loan request has been received.");
+          return res.send("END Your loan request has been received. We will contact you shortly");
         } else {
           return res.send("END User not found."); // Handle case where user is not found
         }

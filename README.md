@@ -1,17 +1,12 @@
-# HealPath USSD
+# Optimum Sacco USSD
 - This project is project dealing with providing USSD services to the user
-- It enables users to books appointments and also view the appointments they have booked
+- It enables users to register for a sacco and also be able to save and apply for a loan
 
 ## Features
-- user dials a ussd and a response is given for him/her to book an a appointment
-- The user books an appointment according to his preference date and time
-- A message is sent to the user if the appointment is success, with the date, time and day.
-
+- user dials a ussd and a response is given for him to view his account or register for the sacco
+- A welcoming message is sent to the user if the registration is successful
 
 ## This USSD service can be applied when
-- a patient is booking an appointment with a doctor
-- Parent scheduling a meeting with the Head of school
-- an employee making an appointment with his or her boss
 
 ## Technologies used
 - node.js

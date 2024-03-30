@@ -72,7 +72,7 @@ app.post("/ussd", async (req, res) => {
       if (user) {
         // User found, show account details
         return res.send(
-          `CON Name: ${user.name}\nID Number: ${user.idNumber}\nPhone Number: ${user.phoneNumber}\n\n1. Check Saving Statement\n2. Predict What to Save\n3. Get Loan`
+          `CON Name: ${user.name}\nID Number: ${user.idNumber}\nPhone Number: ${user.phoneNumber}\n\n1. Check Saving Statement\n2. Predict What to Save\n3. Start Saving\n4. Get Loan`
         );
       } else {
         return res.send("END Invalid PIN");

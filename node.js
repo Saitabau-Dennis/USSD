@@ -48,7 +48,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // Store sacco in memory for simplicity
 //let sacco = {};
-
 app.post("/ussd", async (req, res) => {
   let response = "";
   let { sessionId, serviceCode, phoneNumber, text } = req.body;

@@ -46,8 +46,6 @@ const sms = AfricasTalking.SMS;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Store sacco in memory for simplicity
-//let sacco = {};
 app.post("/ussd", async (req, res) => {
   let response = "";
   let { sessionId, serviceCode, phoneNumber, text } = req.body;
@@ -142,9 +140,14 @@ app.post("/ussd", async (req, res) => {
         console.error("Invalid phone number");
       }
       return res.send(
-        "CON You have successfully registered"
+        "CON You have successfully registered.\n0. Go back to main menu"
       );
     }
+  } else if (parts[0] === "0") {
+    // User wants to go back to the main menu
+    return res.send(
+      "CON Hello, Welcome to Optimum Sacco\n1. View your account\n2. Register"
+    );
   }
   res.set("Content-Type:text/plain");
   return res.send(response);

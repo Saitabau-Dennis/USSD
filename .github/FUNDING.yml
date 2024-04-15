@@ -1,0 +1,14 @@
+# These are supported funding model platforms
+
+github:  [user1, user2]
+patreon:  Patreon 
+open_collective: Open Collective 
+ko_fi: Ko-fi 
+tidelift: tidelift/platform-name/package-name
+community_bridge: community_bridge/project-name
+liberapay:  Liberapay 
+issuehunt: IssueHunt 
+lfx_crowdfunding:lfx_crowdfunding/project-name
+polar: Polar 
+buy_me_a_coffee: Buy Me a Coffee 
+custom:  ['link1', 'link2']
